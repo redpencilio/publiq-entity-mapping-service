@@ -101,7 +101,7 @@ class Address:
         used_scores = 0
         for scoring_fun, weight in scoring_funs:
             res = scoring_fun(b)
-            if res:
+            if res is not None:
                 score += res * weight
                 used_scores += 1
         max_score = used_scores * 100
