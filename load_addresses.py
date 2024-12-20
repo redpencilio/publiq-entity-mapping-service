@@ -24,8 +24,8 @@ WHERE {
             }
             GRAPH ?g {
                 ?address a locn:Address .
-                ?address locn:fullAddress ?full_address FILTER(LANG(?full_address) = "nl" ).
-                OPTIONAL { ?address locn:postcode ?postcode . }
+                ?address (locn:fulladdress | locn:fullAddress) ?full_address FILTER(LANG(?full_address) = "nl" ).
+                OPTIONAL { ?address (locn:postcode | locn:postCode) ?postcode . }
                 ?address locn:postName ?postname FILTER(LANG(?postname) = "nl" ).
                 OPTIONAL { ?address locn:thoroughfare ?thoroughfare FILTER(LANG(?thoroughfare) = "nl" ). }
                 OPTIONAL { ?address locn:locatorDesignator ?locator_designator . }
