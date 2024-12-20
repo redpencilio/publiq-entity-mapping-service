@@ -61,7 +61,8 @@ class Address:
             if match and match_b:
                 num = int(match["num"]) if "num" in match.groupdict() else None
                 num_b = int(match_b["num"]) if "num" in match_b.groupdict() else None
-                score_num = max(100 - abs(num - num_b), 0)
+                # times 10/2 amplification, means score of 0 when more than 10 numbers away (when counting alternating numbering)
+                score_num = max(100 - abs(num - num_b) * (10 / 2), 0)
                 if score_num == 100:
                     let = match["let"] if "let" in match.groupdict() else None
                     # print(f'{num}, {let}')
@@ -90,11 +91,11 @@ class Address:
     def score(self, b: typing.Self):
         scoring_funs = [
             (self.score_specificity, 1),
-            (self.score_adminunitl1, 1),
-            (self.score_postcode, 0.7),
-            (self.score_postname, 0.7),
-            (self.score_thoroughfare, 1),
-            (self.score_locator_designator, 1)
+            (self.score_adminunitl1, 0.6),
+            (self.score_postcode, 0.5),
+            (self.score_postname, 0.5),
+            (self.score_thoroughfare, 2.4),
+            (self.score_locator_designator, 1.0)
         ]
 
         score = 0

@@ -17,7 +17,7 @@ def hello():
             for potential_match in qualifying:
                 class_match = addresses_by_full[potential_match[0]]
                 score = address.score(class_match)
-                if score > 89:
+                if score > 50:
                     print(f"-------\nMatch for \n{address.full_address}")
                     print(f"{str(potential_match[0])} full score {address.score(class_match)}")
                     write_mapping(address.uri, class_match.uri, datetime.now(), score)
