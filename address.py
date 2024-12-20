@@ -42,7 +42,10 @@ class Address:
         return fuzz.partial_token_set_ratio(self.adminunitl1, b.adminunitl1)
 
     def score_postcode(self, b: typing.Self):
-        return fuzz.partial_token_set_ratio(self.postcode, b.postcode)
+        try:
+            return 100 - abs(int(self.postcode) - int(b.postcode))
+        except Exception:
+            return 0
 
     def score_postname(self, b: typing.Self):
         return fuzz.partial_token_set_ratio(self.postname, b.postname)
