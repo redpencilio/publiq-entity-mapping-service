@@ -1,4 +1,5 @@
 from load_addresses import load_addresses
+from mapping import write_mapping
 from thefuzz import process
 
 @app.route("/hello")
@@ -18,3 +19,4 @@ def hello():
                 if score > 89:
                     print(f"-------\nMatch for \n{address.full_address}")
                     print(f"{str(potential_match[0])} full score {address.score(class_match)}")
+                    write_mapping(address.uri, class_match.uri, datetime.now(), score)
