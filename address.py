@@ -99,8 +99,10 @@ class Address:
 
         score = 0
         used_scores = 0
+        logger.debug(f"Scoring '{self.full_address}' against '{b.full_address}'")
         for scoring_fun, weight in scoring_funs:
             res = scoring_fun(b)
+            logger.debug(f"- {scoring_fun.__name__} {res}")
             if res is not None:
                 score += res * weight
                 used_scores += 1
