@@ -73,9 +73,11 @@ class Address:
                         let_num_b = ord(let_b.lower()) - 96
                         score_let = max(100 - abs(let_num - let_num_b), 0)
                         return (score_let + score_num) / 2
-                # else:
-                    # print(f"diff in letters. Only one of both has one")
-                return score_num
+                    else:
+                        logger.debug(f"Only one of both locator designators has a letter {match} {match_b}")
+                        return 95
+                else:
+                    return score_num
             else:
                 return 0
         elif not self.locator_designator and not b.locator_designator:
