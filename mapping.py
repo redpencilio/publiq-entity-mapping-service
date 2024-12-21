@@ -9,7 +9,7 @@ from address import Address
 
 MAPPING_GRAPH = "http://mu.semte.ch/graphs/entity-mappings"
 
-def write_mapping(a, b, created, score):
+def write_mapping(a, a_label, b, b_label, created, score):
     MAPPING_BASE_URI = "http://data.publiq.be/mappings/"
     uuid = generate_uuid()
     uri = MAPPING_BASE_URI + uuid
@@ -24,7 +24,9 @@ INSERT DATA {
             dct:created $created ;
             dct:modified $modified ;
             sssom:subject_id $left_entity ;
+            sssom:subject_label $left_label ;
             sssom:object_id $right_entity ;
+            sssom:object_label $right_label ;
             sssom:mapping_justification $mapping_justification ;
             sssom:similarity_score $similarity_score .
     }
@@ -37,7 +39,9 @@ INSERT DATA {
         created=sparql_escape_datetime(created),
         modified=sparql_escape_datetime(created),
         left_entity=sparql_escape_uri(a),
+        left_label=sparql_escape_string(a_label),
         right_entity=sparql_escape_uri(b),
+        right_label=sparql_escape_string(b_label),
         mapping_justification=sparql_escape_uri("https://w3id.org/semapv/vocab/CompositeMatching"),
         similarity_score=sparql_escape_float(score)
     )

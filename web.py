@@ -20,4 +20,9 @@ def hello():
                 if score > 50:
                     print(f"-------\nMatch for \n{address.full_address}")
                     print(f"{str(potential_match[0])} full score {address.score(class_match)}")
-                    write_mapping(address.uri, class_match.uri, datetime.now(), score)
+                    write_mapping(address.uri,
+                                  address.full_address,
+                                  class_match.uri,
+                                  class_match.full_address,
+                                  datetime.now(),
+                                  score)
