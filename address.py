@@ -68,16 +68,16 @@ class Address:
                     # print(f'{num}, {let}')
                     let_b = match_b["let"] if "let" in match_b.groupdict() else None
                     # print(f'{num_b}, {let_b}')
-                    if let is None and let_b is None:
+                    if let == "" and let_b == "":
                         return score_num
-                    elif let and let_b:
+                    elif let == "" or let_b == "":
+                        logger.debug(f"Only one of both locator designators has a letter {match} {match_b}")
+                        return 95
+                    else:
                         let_num = ord(let.lower()) - 96
                         let_num_b = ord(let_b.lower()) - 96
                         score_let = max(100 - abs(let_num - let_num_b), 0)
                         return (score_let + score_num) / 2
-                    else:
-                        logger.debug(f"Only one of both locator designators has a letter {match} {match_b}")
-                        return 95
                 else:
                     return score_num
             else:
