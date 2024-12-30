@@ -1,6 +1,6 @@
 steps:
   build-latest:
-    image: woodpeckerci/plugin-docker-buildx
+    image: plugins/docker
     settings:
       repo: "${CI_REPO_OWNER}/${CI_REPO_NAME}"
       tags: latest
