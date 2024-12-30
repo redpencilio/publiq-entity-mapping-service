@@ -46,3 +46,44 @@ INSERT DATA {
         similarity_score=sparql_escape_float(score)
     )
     update(query_string)
+
+def check_mapping_existence(a, b):
+    query_template = Template("""
+PREFIX sssom: <https://w3id.org/sssom/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX dct: <http://purl.org/dc/terms/>
+
+SELECT ?mapping ?left_label ?right_label ?similarity_score
+FROM $graph
+WHERE {
+    ?mapping
+        a sssom:Mapping ;
+        dct:created ?created ;
+        sssom:subject_label ?left_label ;
+        sssom:object_label ?right_label ;
+        sssom:similarity_score ?similarity_score .
+    {
+        ?mapping
+            sssom:subject_id $a ;
+            sssom:object_id $b .
+    }
+    UNION
+    {
+        ?mapping
+            sssom:subject_id $b ;
+            sssom:object_id $a .
+    }
+}
+LIMIT 1
+""")
+    query_string = query_template.substitute(
+        graph=sparql_escape_uri(MAPPING_GRAPH),
+        a=sparql_escape_uri(a),
+        b=sparql_escape_uri(b),
+    )
+    query_result = query(query_string)
+    print(query_result)
+    if query_result["results"]["bindings"]:
+        return to_recs(query_result)[0]
+    else:
+        return None
