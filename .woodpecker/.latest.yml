@@ -2,7 +2,7 @@ steps:
   build-latest:
     image: plugins/docker
     settings:
-      repo: "${CI_REPO_OWNER}/${CI_REPO_NAME}"
+      repo: "${CI_REPO_OWNER%%io}/${CI_REPO_NAME}"
       tags: latest
       platforms: linux/amd64, linux/arm64
     secrets: [ docker_username, docker_password ]
