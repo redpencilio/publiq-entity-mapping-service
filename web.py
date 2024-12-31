@@ -1,10 +1,11 @@
 from datetime import datetime
 
-from thefuzz import process
+from thefuzz import process, fuzz
 
 from helpers import logger
 
 from load_addresses import load_addresses
+from load_address_mappings import load_address_mapping_page
 from mapping import write_mapping, check_mapping_existence
 
 @app.route("/full-address-mapping")
@@ -39,3 +40,36 @@ def map_all_addresses():
                                     class_match.full_address,
                                     datetime.now(),
                                     score)
+
+@app.route("/map-locations-by-address")
+def map_locations_by_address():
+    """
+    Load address mappings,
+    Calculate mappings between associated locations,
+    Write mappings that aren't in the DB yet.
+    """
+    page = 0
+    while True:
+        address_mappings_page = load_address_mapping_page(page)
+        if address_mappings_page:
+            for address_mapping in address_mappings_page:
+                a_locator_name, b_locator_name = address_mapping["a_locator_name"], address_mapping["b_locator_name"]
+                score = fuzz.WRatio(a_locator_name, b_locator_name)
+                if score > 50:
+                    a_uri, b_uri = address_mapping["a_location"], address_mapping["b_location"]
+                    logger.debug(f"match for {a_locator_name} VS {b_locator_name}, {score}")
+                    existing_mapping = check_mapping_existence(a_uri, b_uri)
+                    if existing_mapping:
+                        logger.info(f"Match already has been recorded previously. Full score was {address_mapping['address_similarity_score']}. Skipping")
+                    else:
+                        logger.info(f"Writing match to DB")
+                        write_mapping(a_uri,
+                                      a_locator_name,
+                                      b_uri,
+                                      b_locator_name,
+                                      datetime.now(),
+                                      score)
+            page += 1
+        else:
+            break
+

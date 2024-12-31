@@ -13,6 +13,11 @@ def write_mapping(a, a_label, b, b_label, created, score):
     MAPPING_BASE_URI = "http://data.publiq.be/mappings/"
     uuid = generate_uuid()
     uri = MAPPING_BASE_URI + uuid
+    if score == 100:
+        predicate_id = "http://www.w3.org/2004/02/skos/core#exactMatch"
+        predicate_id_triple = f"{sparql_escape_uri(uri)} sssom:predicate_id {sparql_escape_uri(predicate_id)} ."
+    else:
+        predicate_id_triple = ""
     query_template = Template("""
 PREFIX sssom: <https://w3id.org/sssom/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -29,6 +34,7 @@ INSERT DATA {
             sssom:object_label $right_label ;
             sssom:mapping_justification $mapping_justification ;
             sssom:similarity_score $similarity_score .
+        $predicate_id_triple
     }
 }
 
@@ -43,7 +49,8 @@ INSERT DATA {
         right_entity=sparql_escape_uri(b),
         right_label=sparql_escape_string(b_label),
         mapping_justification=sparql_escape_uri("https://w3id.org/semapv/vocab/CompositeMatching"),
-        similarity_score=sparql_escape_float(score)
+        similarity_score=sparql_escape_float(score),
+        predicate_id_triple=predicate_id_triple
     )
     update(query_string)
 
