@@ -18,17 +18,16 @@ WHERE {
             VALUES ?g {
                 <http://locatieslinkeddata.ticketgang-locations.ticketing.acagroup.be>
                 <http://locatiessparql.kunstenpunt-locaties.professionelekunsten.kunsten.be>
-                <http://metadata.cultuurparticipatie-metadata.vrijetijdsparticipatie.publiq.be>
                 <http://placessparql.publiq-uit-locaties.vrijetijdsparticipatie.publiq.be>
                 <http://organisatorensparql.publiq-uit-organisatoren.vrijetijdsparticipatie.publiq.be>
             }
             GRAPH ?g {
                 ?address a locn:Address .
                 ?address (locn:fulladdress | locn:fullAddress) ?full_address FILTER(LANG(?full_address) = "nl" ).
-                OPTIONAL { ?address (locn:postcode | locn:postCode) ?postcode . }
+                ?address (locn:postcode | locn:postCode) ?postcode .
                 ?address locn:postName ?postname FILTER(LANG(?postname) = "nl" ).
-                OPTIONAL { ?address locn:thoroughfare ?thoroughfare FILTER(LANG(?thoroughfare) = "nl" ). }
-                OPTIONAL { ?address locn:locatorDesignator ?locator_designator . }
+                ?address locn:thoroughfare ?thoroughfare FILTER(LANG(?thoroughfare) = "nl" ).
+                ?address locn:locatorDesignator ?locator_designator .
                 ?address locn:adminUnitL1 ?adminunitl1 .
             }
             FILTER NOT EXISTS { ?address ^locn:address/prov:invalidatedAtTime ?time . }
