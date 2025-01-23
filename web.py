@@ -2,10 +2,13 @@ from datetime import datetime
 
 from thefuzz import process, fuzz
 
-from helpers import logger
+from helpers import logger, query, update
+
+from skolemization import object_query_template, subject_query_template
 
 from load_addresses import load_addresses
 from load_address_mappings import load_address_mapping_page
+from load_location_mappings import query_related_mappings, load_ungrouped_location_mapping, write_cluster
 from mapping import write_mapping, check_mapping_existence
 
 @app.route("/full-address-mapping")
@@ -73,3 +76,39 @@ def map_locations_by_address():
         else:
             break
 
+def load_related_mappings(mapping, traversed_mappings=[]):
+    if not traversed_mappings:
+        traversed_mappings = [mapping]
+
+    results = query_related_mappings(mapping, traversed_mappings)
+    related_mappings = [r["related_mapping"] for r in results]
+    traversed_mappings = traversed_mappings + related_mappings
+    print(f"loading round, found {len(results)}")
+    new_related_mappings = []
+    for mapping in related_mappings:
+        new_related_mappings = new_related_mappings + load_related_mappings(mapping, traversed_mappings)
+    return related_mappings + new_related_mappings
+
+
+@app.route("/cluster-location-mappings")
+def cluster_location_mappings():
+    i = 0
+    while True:
+        res = load_ungrouped_location_mapping()
+        if not res:
+            break
+        else:
+            i += 1
+        mapping = res['mapping']
+        logger.info(f"Clustering mappings for mapping {mapping}")
+        related_mappings = load_related_mappings(res["mapping"])
+        if len(related_mappings) > 0:
+            logger.info(f"Found {len(related_mappings)} related mappings. Writing to cluster")
+            # Fixme: Relate locations instead? Having the source mappings is useful too?
+            related_mappings.append(mapping)
+            write_cluster(related_mappings)
+        else:
+            logger.debug(f"Found no related mappings")
+            write_cluster([mapping])
+
+    return f"{i} clusters created"
