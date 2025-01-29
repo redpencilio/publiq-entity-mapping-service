@@ -2,6 +2,7 @@ from datetime import datetime
 
 from thefuzz import process, fuzz
 
+from flask import request
 from helpers import logger, query, update
 
 from skolemization import object_query_template, subject_query_template
@@ -9,48 +10,56 @@ from skolemization import object_query_template, subject_query_template
 from load_addresses import load_addresses
 from load_address_mappings import load_address_mapping_page
 from load_location_mappings import query_related_mappings, load_ungrouped_location_mapping, write_cluster
-from mapping import write_mapping, check_mapping_existence
+from mapping import write_mapping, find_mapping_for_uris
 
-@app.route("/full-address-mapping")
+def map_addresses(a, b):
+    score = a.score(b)
+    if score > 50:
+        logger.debug(f"-------\nMatch for \n{a.full_address}")
+        logger.debug(f"{str(b)} full score {a.score(b)}")
+        existing_mapping = find_mapping_for_uris(a.uri, b.uri)  # by URI
+        if existing_mapping:
+            logger.info(f"Match already has been recorded previously. Full score was {existing_mapping['similarity_score']}. Skipping")
+        else:
+            logger.info(f"Writing match to DB")
+            write_mapping(a.uri,
+                          a.full_address,
+                          b.uri,
+                          b.full_address,
+                          datetime.now(),
+                          score)
+
+@app.route("/map-addresses")
 def map_all_addresses():
     """
     Load all addresses,
     Calculate mappings between them,
     Write mappings that aren't in the DB yet.
     """
-    addresses = load_addresses()
+    _from = request.args.get("from")
+    if _from:
+        from_date = datetime.fromisoformat(_from)
+    else:
+        from_date = None
 
-    addresses_by_full = {a.full_address: a for a in addresses}
+    all_addresses = load_addresses(_from=None)
+    if not from_date:
+        to_map_addresses = all_addresses
+    else:
+        to_map_addresses = load_addresses(_from=from_date)
+
+    addresses_by_full = {a.full_address: a for a in all_addresses}
     full_addresses_list = addresses_by_full.keys()
-    for address in addresses:
+    for address in to_map_addresses:
         bestmatches = process.extract(address.full_address, full_addresses_list, limit=20)
         qualifying = [bestmatch for bestmatch in bestmatches[1:] if bestmatch[1] > 91 ]
         if qualifying:
             for potential_match in qualifying:
                 class_match = addresses_by_full[potential_match[0]]
-                score = address.score(class_match)
-                if score > 50:
-                    logger.debug(f"-------\nMatch for \n{address.full_address}")
-                    logger.debug(f"{str(potential_match[0])} full score {address.score(class_match)}")
-                    existing_mapping = check_mapping_existence(address.uri, class_match.uri)
-                    if existing_mapping:
-                        logger.info(f"Match already has been recorded previously. Full score was {existing_mapping['similarity_score']}. Skipping")
-                    else:
-                        logger.info(f"Writing match to DB")
-                        write_mapping(address.uri,
-                                    address.full_address,
-                                    class_match.uri,
-                                    class_match.full_address,
-                                    datetime.now(),
-                                    score)
+                map_addresses(address, class_match)
 
 @app.route("/map-locations-by-address")
 def map_locations_by_address():
-    """
-    Load address mappings,
-    Calculate mappings between associated locations,
-    Write mappings that aren't in the DB yet.
-    """
     page = 0
     while True:
         address_mappings_page = load_address_mapping_page(page)
@@ -61,7 +70,7 @@ def map_locations_by_address():
                 if score > 50:
                     a_uri, b_uri = address_mapping["a_location"], address_mapping["b_location"]
                     logger.debug(f"match for {a_locator_name} VS {b_locator_name}, {score}")
-                    existing_mapping = check_mapping_existence(a_uri, b_uri)
+                    existing_mapping = find_mapping_for_uris(a_uri, b_uri)
                     if existing_mapping:
                         logger.info(f"Match already has been recorded previously. Full score was {address_mapping['address_similarity_score']}. Skipping")
                     else:

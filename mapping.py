@@ -54,7 +54,7 @@ INSERT DATA {
     )
     update(query_string)
 
-def check_mapping_existence(a, b):
+def find_mapping_for_uris(a, b):
     query_template = Template("""
 PREFIX sssom: <https://w3id.org/sssom/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
