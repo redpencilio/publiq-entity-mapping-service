@@ -9,7 +9,7 @@ from address import Address
 
 MAPPING_GRAPH = "http://mu.semte.ch/graphs/entity-mappings"
 
-def write_mapping(a, a_label, b, b_label, created, score):
+def write_mapping(a, a_label, b, b_label, entity_type, created, score):
     MAPPING_BASE_URI = "http://data.publiq.be/mappings/"
     uuid = generate_uuid()
     uri = MAPPING_BASE_URI + uuid
@@ -22,12 +22,16 @@ def write_mapping(a, a_label, b, b_label, created, score):
 PREFIX sssom: <https://w3id.org/sssom/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
 
 INSERT DATA {
     GRAPH $graph {
         $mapping a sssom:Mapping ;
+            mu:uuid $uuid ;
             dct:created $created ;
             dct:modified $modified ;
+            sssom:subject_type $entity_type ;
+            sssom:object_type $entity_type ;
             sssom:subject_id $left_entity ;
             sssom:subject_label $left_label ;
             sssom:object_id $right_entity ;
@@ -42,8 +46,10 @@ INSERT DATA {
     query_string = query_template.substitute(
         graph=sparql_escape_uri(MAPPING_GRAPH),
         mapping=sparql_escape_uri(uri),
+        uuid=sparql_escape_string(generate_uuid()),
         created=sparql_escape_datetime(created),
         modified=sparql_escape_datetime(created),
+        entity_type=sparql_escape_uri(entity_type),
         left_entity=sparql_escape_uri(a),
         left_label=sparql_escape_string(a_label),
         right_entity=sparql_escape_uri(b),

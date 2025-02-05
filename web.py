@@ -12,6 +12,9 @@ from load_address_mappings import load_address_mapping_page
 from load_location_mappings import query_related_mappings, load_ungrouped_location_mapping, write_cluster
 from mapping import write_mapping, find_mapping_for_uris
 
+ADDRESS_RDF_TYPE = "http://www.w3.org/ns/locn#Address"
+LOCATION_RDF_TYPE = "http://purl.org/dc/terms/Location"
+
 def map_addresses(a, b):
     score = a.score(b)
     if score > 50:
@@ -26,6 +29,7 @@ def map_addresses(a, b):
                           a.full_address,
                           b.uri,
                           b.full_address,
+                          ADDRESS_RDF_TYPE,
                           datetime.now(),
                           score)
 
