@@ -9,7 +9,14 @@ from address import Address
 
 MAPPING_GRAPH = "http://mu.semte.ch/graphs/entity-mappings"
 
-def write_mapping(a, a_label, b, b_label, entity_type, created, score):
+def write_mapping(a,
+                  a_label,
+                  b,
+                  b_label,
+                  entity_type,
+                  created,
+                  score,
+                  mapping_justification="https://w3id.org/semapv/vocab/CompositeMatching"):
     MAPPING_BASE_URI = "http://data.publiq.be/mappings/"
     uuid = generate_uuid()
     uri = MAPPING_BASE_URI + uuid
@@ -54,7 +61,7 @@ INSERT DATA {
         left_label=sparql_escape_string(a_label),
         right_entity=sparql_escape_uri(b),
         right_label=sparql_escape_string(b_label),
-        mapping_justification=sparql_escape_uri("https://w3id.org/semapv/vocab/CompositeMatching"),
+        mapping_justification=sparql_escape_uri(mapping_justification),
         similarity_score=sparql_escape_float(score),
         predicate_id_triple=predicate_id_triple
     )

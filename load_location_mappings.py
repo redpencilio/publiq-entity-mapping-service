@@ -8,6 +8,7 @@ from escape_helpers import (sparql_escape_string,
     sparql_escape_float)
 from query_result_helpers import to_recs
 
+MAPPING_GRAPH = "http://mu.semte.ch/graphs/entity-mappings"
 MANUAL_MAPPING_GRAPH = "http://mu.semte.ch/graphs/entity-manual-mappings"
 CLUSTER_GRAPH = "http://mu.semte.ch/graphs/entity-clusters"
 
@@ -168,3 +169,65 @@ INSERT DATA {
         members=", ".join([sparql_escape_uri(m) for m in members])
     )
     update(query_string)
+
+def query_verified_location_mapping_by_address_mapping(address_mapping):
+    query_template = Template("""
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX locn: <http://www.w3.org/ns/locn#>
+PREFIX sssom: <https://w3id.org/sssom/>
+PREFIX dct: <http://purl.org/dc/terms/>
+
+SELECT DISTINCT (?verified_location_mapping AS ?uri) ?a ?a_label ?b ?b_label
+WHERE {
+    GRAPH $mapping_graph {
+        $address_mapping a sssom:Mapping .
+        {
+            $address_mapping sssom:subject_id ?address .
+        }
+        UNION
+        {
+            $address_mapping sssom:object_id ?address .
+        }
+    }
+    VALUES ?g {
+        <http://locatieslinkeddata.ticketgang-locations.ticketing.acagroup.be>
+        <http://locatiessparql.kunstenpunt-locaties.professionelekunsten.kunsten.be>
+        <http://placessparql.publiq-uit-locaties.vrijetijdsparticipatie.publiq.be>
+        <http://organisatorensparql.publiq-uit-organisatoren.vrijetijdsparticipatie.publiq.be>
+    }
+    GRAPH ?g {
+        ?location locn:address ?address .
+    }
+    GRAPH $manual_mapping_graph {
+        ?verified_location_mapping a sssom:Mapping ;
+            sssom:subject_id ?a ;
+            sssom:subject_label ?a_label ;
+            sssom:object_id ?b ;
+            sssom:object_label ?b_label ;
+            sssom:mapping_justification <https://w3id.org/semapv/vocab/ManualMappingCuration> ;
+            sssom:predicate_id ?predicate_id .
+        VALUES ?predicate_id {
+            <http://www.w3.org/2004/02/skos/core#exactMatch>
+            <http://www.w3.org/2004/02/skos/core#relatedMatch>
+            # 'http://mu.semte.ch/vocabularies/ext/noMatch'
+        }
+        {
+            ?verified_location_mapping sssom:subject_id ?location .
+        }
+        UNION
+        {
+            ?verified_location_mapping sssom:object_id ?location .
+        }
+    }
+}
+""")
+    query_string = query_template.substitute(
+        address_mapping=sparql_escape_uri(address_mapping),
+        mapping_graph=sparql_escape_uri(MAPPING_GRAPH),
+        manual_mapping_graph=sparql_escape_uri(MANUAL_MAPPING_GRAPH),
+    )
+    query_result = query(query_string)
+    if query_result["results"]["bindings"]:
+        return to_recs(query_result)
+    else:
+        return []

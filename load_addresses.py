@@ -5,6 +5,10 @@ from query_result_helpers import to_recs
 from address import Address
 
 def load_addresses_page(page=0, size=50, _from=None):
+    """
+    Including a filter for modified date.
+    Since Publiq Address instances don't have modified dates, look at associated location modified date.
+    """
     offset = page * size
     limit = size
     if _from:
@@ -35,7 +39,8 @@ WHERE {
                 ?address locn:thoroughfare ?thoroughfare FILTER(LANG(?thoroughfare) = "nl" ).
                 ?address locn:locatorDesignator ?locator_designator .
                 ?address locn:adminUnitL1 ?adminunitl1 .
-                OPTIONAL { ?address dct:modified ?modified . }
+                # Address itself has no modified data. Location does.
+                OPTIONAL { ?address ^locn:address / dct:modified ?modified . }
             }
             FILTER NOT EXISTS { ?address ^locn:address/prov:invalidatedAtTime ?time . }
             $from_filter
@@ -66,8 +71,8 @@ def load_addresses(_from):
             addresses = addresses + addresses_page
             page += 1
             ### tmp
-            if len(addresses) > 100:
-                break
+            # if len(addresses) > 1000:
+            #     break
         else:
             break
     return addresses
