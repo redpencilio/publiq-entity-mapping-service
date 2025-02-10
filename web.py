@@ -5,8 +5,6 @@ from thefuzz import process, fuzz
 from flask import request
 from helpers import logger, query, update
 
-from skolemization import object_query_template, subject_query_template
-
 from load_addresses import load_addresses
 from load_address_mappings import load_address_mapping_page
 from load_location_mappings import query_related_mappings, load_ungrouped_location_mapping, write_cluster, query_verified_location_mapping_by_address_mapping
