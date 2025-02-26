@@ -1,5 +1,5 @@
 from string import Template
-from helpers import query
+from query import query
 from escape_helpers import sparql_escape_datetime
 from query_result_helpers import to_recs
 from address import Address

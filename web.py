@@ -3,7 +3,8 @@ from datetime import datetime
 from thefuzz import process, fuzz
 
 from flask import request
-from helpers import logger, query, update
+from helpers import logger
+from query import query, update
 
 from load_addresses import load_addresses
 from load_address_mappings import load_address_mapping_page

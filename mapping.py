@@ -1,5 +1,6 @@
 from string import Template
-from helpers import query, update, generate_uuid
+from helpers import generate_uuid
+from query import query, update
 from escape_helpers import (sparql_escape_string,
     sparql_escape_uri,
     sparql_escape_datetime,
